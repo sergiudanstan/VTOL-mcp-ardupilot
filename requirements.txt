@@ -1,3 +1,6 @@
 pymavlink>=2.4.41
 mcp>=1.0.0
 pytest>=7.0.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+websockets>=11.0
