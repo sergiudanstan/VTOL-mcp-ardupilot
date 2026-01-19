@@ -10,12 +10,17 @@ MCP server for integrating Claude with ArduPilot SITL via MAVLink.
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.10+ (tested with 3.12)
 - ArduPilot SITL running locally
 
 ## Installation
 
 ```bash
+# Create virtual environment
+python3.12 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
@@ -39,14 +44,14 @@ python test_connection.py
 
 ### 3. Configure Claude Code
 
-Add to your Claude Code MCP settings:
+Add to your Claude Code MCP settings (`~/.claude/settings.json`):
 
 ```json
 {
   "mcpServers": {
     "ardupilot": {
-      "command": "python",
-      "args": ["/path/to/ardupilot_mcp_server.py"],
+      "command": "/path/to/VTOL-mcp-ardupilot/venv/bin/python",
+      "args": ["/path/to/VTOL-mcp-ardupilot/ardupilot_mcp_server.py"],
       "env": {
         "MAVLINK_CONNECTION": "udp:127.0.0.1:14550"
       }
