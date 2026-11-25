@@ -434,4 +434,4 @@ async def websocket_endpoint(websocket: WebSocket):
 if __name__ == "__main__":
     print("Starting ArduPilot Dashboard...")
     print("Open http://localhost:8080 in your browser")
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="127.0.0.1", port=8080)

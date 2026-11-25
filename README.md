@@ -1,6 +1,10 @@
 # ArduPilot MCP Server
 
-MCP server for integrating Claude with ArduPilot SITL via MAVLink.
+MCP server for integrating Claude with ArduPilot SITL via MAVLink, plus a web dashboard for live telemetry and commands.
+
+![ArduPilot dashboard showing a QuadPlane in QLOITER: attitude, position, velocity, battery and command buttons](docs/dashboard.png)
+
+*Dashboard fed with synthetic MAVLink telemetry (QuadPlane, QLOITER).*
 
 ## Features
 
@@ -44,21 +48,19 @@ python test_connection.py
 
 ### 3. Configure Claude Code
 
-Add to your Claude Code MCP settings (`~/.claude/settings.json`):
-
-```json
-{
-  "mcpServers": {
-    "ardupilot": {
-      "command": "/path/to/VTOL-mcp-ardupilot/venv/bin/python",
-      "args": ["/path/to/VTOL-mcp-ardupilot/ardupilot_mcp_server.py"],
-      "env": {
-        "MAVLINK_CONNECTION": "udp:127.0.0.1:14550"
-      }
-    }
-  }
-}
+```bash
+claude mcp add ardupilot \
+  -e MAVLINK_CONNECTION=udp:127.0.0.1:14550 \
+  -- /path/to/VTOL-mcp-ardupilot/venv/bin/python /path/to/VTOL-mcp-ardupilot/ardupilot_mcp_server.py
 ```
+
+### 4. Web dashboard (optional)
+
+```bash
+python dashboard.py   # http://localhost:8080
+```
+
+Shows connection, mode, arm state, attitude, position, velocity and battery, with buttons for set mode, arm, disarm, takeoff and land.
 
 ## Available Tools
 
@@ -106,3 +108,13 @@ export MAVLINK_CONNECTION="/dev/ttyUSB0"
 > Get telemetry
 {"attitude": {...}, "position": {"alt": 10.2}, ...}
 ```
+
+## Tests
+
+```bash
+pytest -q   # 34 passed, 4 skipped without a running SITL
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
