@@ -1,5 +1,10 @@
 # ArduPilot MCP Server
 
+[![CI](https://github.com/sergiudanstan/VTOL-mcp-ardupilot/actions/workflows/ci.yml/badge.svg)](https://github.com/sergiudanstan/VTOL-mcp-ardupilot/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/sergiudanstan/VTOL-mcp-ardupilot/actions/workflows/codeql.yml/badge.svg)](https://github.com/sergiudanstan/VTOL-mcp-ardupilot/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/sergiudanstan/VTOL-mcp-ardupilot/badge)](https://scorecard.dev/viewer/?uri=github.com/sergiudanstan/VTOL-mcp-ardupilot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 MCP server for integrating Claude with ArduPilot SITL via MAVLink, plus a web dashboard for live telemetry and commands.
 
 ![ArduPilot dashboard showing a QuadPlane in QLOITER: attitude, position, velocity, battery and command buttons](docs/dashboard.png)
@@ -114,6 +119,15 @@ export MAVLINK_CONNECTION="/dev/ttyUSB0"
 ```bash
 pytest -q   # 34 passed, 4 skipped without a running SITL
 ```
+
+## Development
+
+```bash
+pip install -r requirements.txt
+python -m pytest -q -rs      # SITL tests skip unless SITL_RUNNING=1
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for branches and releases, [SECURITY.md](SECURITY.md) before pointing this at anything other than a simulator, and [CHANGELOG.md](CHANGELOG.md) for history.
 
 ## License
 
