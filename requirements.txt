@@ -1,5 +1,5 @@
 pymavlink>=2.4.50
-mcp>=2.3.0
+mcp>=2.3.0,<3
 pytest>=9.2.0
 fastapi>=0.100.0
 uvicorn>=0.54.0
