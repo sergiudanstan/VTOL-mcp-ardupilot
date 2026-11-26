@@ -4,17 +4,14 @@
 import json
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 
 from mavlink_client import MAVLinkClient
 from safety import check_command
 
-# Initialize server and MAVLink client
-server = Server("ardupilot-mcp")
 client = MAVLinkClient()
 
 
-@server.list_tools()
 async def list_tools() -> list[Tool]:
     """List available ArduPilot tools."""
     return [
@@ -108,7 +105,6 @@ async def list_tools() -> list[Tool]:
     ]
 
 
-@server.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     """Handle tool calls."""
     # Refuse unsafe motion commands before touching the vehicle
@@ -168,6 +164,20 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
         result = {"error": f"Unknown tool: {name}"}
 
     return [TextContent(type="text", text=json.dumps(result, indent=2))]
+
+
+async def _on_list_tools(ctx, params):
+    from mcp.types import ListToolsResult
+    return ListToolsResult(tools=await list_tools())
+
+
+async def _on_call_tool(ctx, params):
+    from mcp.types import CallToolResult
+    return CallToolResult(content=await call_tool(params.name, params.arguments or {}))
+
+
+# mcp 2.x registers handlers through the constructor (the 1.x decorators are gone)
+server = Server("ardupilot-mcp", on_list_tools=_on_list_tools, on_call_tool=_on_call_tool)
 
 
 async def main():

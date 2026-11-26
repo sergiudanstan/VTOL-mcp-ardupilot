@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-26
+
+### Fixed
+- The server did not import with the current MCP Python SDK (`mcp` 2.x removed the `Server.list_tools`/`call_tool`
+  decorators). Handlers are now registered through the `Server` constructor. Tool names, schemas and the safety
+  guard are unchanged.
+- New test `tests/test_real_sdk.py` runs the server against the real SDK (no stubs), so CI catches API drift.
+
+### Changed
+- `mcp` is pinned to `>=2.3.0,<3`.
+
 ## [0.1.1] - 2026-11-26
 
 ### Security
