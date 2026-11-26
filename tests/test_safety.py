@@ -10,14 +10,19 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import safety
-from safety import check_command, is_sitl_connection, max_altitude_m
+from safety import (
+    ALLOW_REAL_ENV,
+    MAX_ALT_ENV,
+    check_command,
+    is_sitl_connection,
+    max_altitude_m,
+)
 
 
 @pytest.fixture(autouse=True)
 def clean_env(monkeypatch):
-    monkeypatch.delenv(safety.ALLOW_REAL_ENV, raising=False)
-    monkeypatch.delenv(safety.MAX_ALT_ENV, raising=False)
+    monkeypatch.delenv(ALLOW_REAL_ENV, raising=False)
+    monkeypatch.delenv(MAX_ALT_ENV, raising=False)
 
 
 @pytest.mark.parametrize("conn", [
@@ -60,12 +65,12 @@ def test_read_only_and_safety_tools_not_gated(name):
 
 @pytest.mark.parametrize("name,args", MOTION)
 def test_override_env_allows_real_vehicle(monkeypatch, name, args):
-    monkeypatch.setenv(safety.ALLOW_REAL_ENV, "1")
+    monkeypatch.setenv(ALLOW_REAL_ENV, "1")
     assert check_command(name, "/dev/ttyUSB0", args) is None
 
 
 def test_override_requires_exactly_one(monkeypatch):
-    monkeypatch.setenv(safety.ALLOW_REAL_ENV, "true")
+    monkeypatch.setenv(ALLOW_REAL_ENV, "true")
     assert check_command("arm", "/dev/ttyUSB0") is not None
 
 
@@ -76,14 +81,14 @@ def test_altitude_default_ceiling():
 
 
 def test_altitude_env_override(monkeypatch):
-    monkeypatch.setenv(safety.MAX_ALT_ENV, "30")
+    monkeypatch.setenv(MAX_ALT_ENV, "30")
     assert check_command("takeoff", "udp:127.0.0.1:14550", {"altitude": 31}) is not None
     assert check_command("takeoff", "udp:127.0.0.1:14550", {"altitude": 30}) is None
 
 
 @pytest.mark.parametrize("bad", ["abc", "nan", "inf", "-5", "0"])
 def test_invalid_ceiling_falls_back(monkeypatch, bad):
-    monkeypatch.setenv(safety.MAX_ALT_ENV, bad)
+    monkeypatch.setenv(MAX_ALT_ENV, bad)
     assert max_altitude_m() == 120
 
 
