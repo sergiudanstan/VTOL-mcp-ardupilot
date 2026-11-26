@@ -97,6 +97,16 @@ export MAVLINK_CONNECTION="tcp:127.0.0.1:5760"
 export MAVLINK_CONNECTION="/dev/ttyUSB0"
 ```
 
+### Safety limits
+
+- **Real vehicles are refused by default.** `arm`, `takeoff`, `set_mode` and `upload_mission`
+  (and the dashboard's equivalents) only work on UDP/TCP links to localhost (SITL). On a serial
+  device or a non-local host they return a "Refused" error. Set `VTOL_MCP_ALLOW_REAL_VEHICLE=1`
+  to lift this; this project is not validated for real aircraft. Telemetry, `disarm`, `land` and
+  `clear_mission` are never blocked.
+- **Altitude ceiling.** `VTOL_MCP_MAX_ALT_M` (default `120`, meters) is the highest altitude
+  `takeoff` and mission waypoints accept; anything above it is rejected.
+
 ## Example Session
 
 ```

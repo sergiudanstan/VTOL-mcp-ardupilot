@@ -34,18 +34,22 @@ There is no bug bounty; credit is offered in the advisory and changelog.
 What an attacker could reach, from reading the code:
 
 - **MCP tools.** The server trusts its MCP client completely and has no authentication of its own.
-  `takeoff` forwards `altitude` to the vehicle without a range check, and `upload_mission` forwards
-  waypoint fields (`lat`, `lon`, `alt`, `command`, `param1`..`param4`) as given, including an
+  `takeoff` and mission waypoint altitudes are capped at `VTOL_MCP_MAX_ALT_M` (default 120 m), and
+  `upload_mission` forwards the other waypoint fields (`lat`, `lon`, `alt`, `command`, `param1`..`param4`) as given, including an
   arbitrary MAVLink `command` number. `set_mode` is checked against the vehicle's own mode table.
   Whoever controls the model's tool calls (for example through prompt injection in other content in
-  the same session) controls the vehicle.
+  the same session) controls the vehicle. Motion commands (`arm`, `takeoff`, `set_mode`,
+  `upload_mission`) are refused unless the connection is UDP/TCP to localhost; set
+  `VTOL_MCP_ALLOW_REAL_VEHICLE=1` to override (unsupported, see below).
 - **Dashboard.** It binds to `127.0.0.1:8080` only and has no login. The WebSocket at `/ws`
-  accepts `arm`, `disarm`, `set_mode`, `takeoff` and `land`, and the code does not check the
-  `Origin` header, so a web page opened in a browser on the same machine can in principle open that
-  socket. This has not been exploited or tested here; treat it as a real risk. Run the dashboard only
-  while you use it, and never change the bind address to a non-loopback one.
+  accepts `arm`, `disarm`, `set_mode`, `takeoff` and `land`. It rejects connections whose `Origin`
+  header is not the dashboard's own (`http://127.0.0.1:8080` or `http://localhost:8080`), so other web
+  pages cannot drive it; clients that send no `Origin` (non-browser) are accepted. The same motion
+  and altitude limits apply. Run the dashboard only while you use it, and never change the bind
+  address to a non-loopback one.
 - **Connection string.** `MAVLINK_CONNECTION` accepts any pymavlink endpoint, including serial devices
-  and remote TCP/UDP hosts. Setting it to a real flight controller is outside what this project supports.
+  and remote TCP/UDP hosts. Motion commands on such a link are refused unless `VTOL_MCP_ALLOW_REAL_VEHICLE=1` is set.
+  Setting it to a real flight controller is outside what this project supports.
 - **Tests.** `tests/test_input_validation.py` exercises validator functions defined inside the test file;
   the shipped server does not call them. They are not evidence that the server validates input.
 

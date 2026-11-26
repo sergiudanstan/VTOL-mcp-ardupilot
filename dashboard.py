@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 
 from mavlink_client import MAVLinkClient
+from safety import check_command
 
 # Global client instance
 client = MAVLinkClient()
@@ -32,6 +33,15 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="ArduPilot Dashboard", lifespan=lifespan)
+
+PORT = 8080
+ALLOWED_ORIGINS = {f"http://127.0.0.1:{PORT}", f"http://localhost:{PORT}"}
+
+
+def origin_allowed(origin) -> bool:
+    """Allow the dashboard's own origin. A missing Origin header (non-browser
+    clients, which are not subject to cross-site attacks) is allowed."""
+    return origin is None or origin in ALLOWED_ORIGINS
 
 
 DASHBOARD_HTML = """
@@ -378,6 +388,11 @@ async def get_dashboard():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time updates."""
+    # Browsers do not apply the same-origin policy to WebSockets, so any web page
+    # could otherwise drive the vehicle through this socket.
+    if not origin_allowed(websocket.headers.get("origin")):
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
 
     async def send_updates():
@@ -400,6 +415,11 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_json()
             cmd = data.get("command")
             response = {"success": False, "message": "Unknown command"}
+
+            refusal = check_command(cmd, client.connection_string, data)
+            if refusal:
+                await websocket.send_json({"response": {"success": False, "message": refusal}})
+                continue
 
             if cmd == "arm":
                 success = client.arm()
@@ -434,4 +454,4 @@ async def websocket_endpoint(websocket: WebSocket):
 if __name__ == "__main__":
     print("Starting ArduPilot Dashboard...")
     print("Open http://localhost:8080 in your browser")
-    uvicorn.run(app, host="127.0.0.1", port=8080)
+    uvicorn.run(app, host="127.0.0.1", port=PORT)
