@@ -7,6 +7,7 @@ from mcp.server.stdio import stdio_server
 from mcp.types import Tool, TextContent
 
 from mavlink_client import MAVLinkClient
+from safety import check_command
 
 # Initialize server and MAVLink client
 server = Server("ardupilot-mcp")
@@ -110,6 +111,11 @@ async def list_tools() -> list[Tool]:
 @server.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     """Handle tool calls."""
+    # Refuse unsafe motion commands before touching the vehicle
+    refusal = check_command(name, client.connection_string, arguments)
+    if refusal:
+        return [TextContent(type="text", text=json.dumps({"success": False, "error": refusal}, indent=2))]
+
     # Ensure connected
     if not client.master:
         if not client.connect():
